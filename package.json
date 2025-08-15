@@ -1,0 +1,40 @@
+{
+  "name": "shopify-changelog-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Shopify Developer Changelog",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec \"npm run build && npm run start\" --ext ts",
+    "dev:ts": "ts-node src/index.ts",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "test": "npm run build && echo '{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0.0\"}}}' | npm run start"
+  },
+  "keywords": [
+    "mcp",
+    "shopify",
+    "changelog",
+    "server"
+  ],
+  "author": "Shopify Changelog MCP Server",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.3",
+    "fast-xml-parser": "^5.2.5",
+    "node-fetch": "^3.3.2",
+    "xml2js": "^0.6.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,47 +1,52 @@
-# Ruby
-*.gem
-*.rbc
-/.config
-/coverage/
-/InstalledFiles
-/pkg/
-/spec/reports/
-/spec/examples.txt
-/test/tmp/
-/test/version_tmp/
-/tmp/
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Bundler
-/.bundle/
-/vendor/bundle
-/lib/bundler/man/
-.ruby-version
-.ruby-gemset
-.rvmrc
-Gemfile.lock
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
 
-# Environment
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Logs
+logs
+*.log
+
+# Environment variables
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# IDEs
+# Editor directories and files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Logs
-*.log
-/log/
-
-# Development
-/node_modules/
-/yarn-error.log
-.byebug_history
-
-# MCP specific
-mcp-debug.log
-*.pid
+# Temporary files
+*.tmp
+*.temp

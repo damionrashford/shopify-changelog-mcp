@@ -1,0 +1,9 @@
+{
+  "watch": ["src/**/*"],
+  "ext": "ts,js,json",
+  "ignore": ["dist/**/*", "node_modules/**/*"],
+  "exec": "npm run build && npm run start",
+  "env": {
+    "MCP_DEBUG": "true"
+  }
+}

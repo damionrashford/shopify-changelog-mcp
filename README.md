@@ -1,258 +1,255 @@
-# Shopify Changelog MCP Server
+# Shopify Developer Changelog MCP Server
 
-A Model Context Protocol (MCP) server that provides access to the Shopify Developer Changelog RSS feed. This server enables AI assistants to fetch, search, and analyze Shopify platform updates, API changes, deprecations, and new features.
+A Model Context Protocol (MCP) server that provides access to the Shopify Developer Changelog RSS feed. Built with TypeScript and designed for integration with MCP-compatible clients like Cursor.
+
+## Overview
+
+This server exposes three main tools for accessing Shopify changelog information:
+
+- **fetch_changelog**: Retrieve changelog entries with filtering options
+- **search_changelog**: Search through changelog entries by keywords
+- **breaking_changes**: Find breaking changes and deprecations
 
 ## Features
 
-- Fetch changelog entries with comprehensive filtering options
-- Search for specific topics or keywords in the changelog
-- Get breaking changes and deprecations requiring action
-- Filter by API versions, API types, content categories
-- Real-time access to official Shopify Developer Changelog
+- XML parsing using fast-xml-parser
+- Comprehensive filtering and search capabilities
+- Breaking change detection and warnings
+- Proper error handling and logging
+- Clean, componentized architecture
+- TypeScript type safety
 
 ## Requirements
 
-- **Ruby 3.2.0 or higher** (REQUIRED - MCP gem requires Ruby >= 3.2.0)
-- Bundler gem installed
-
-### Ruby Version Check
-
-Check your Ruby version:
-
-```bash
-ruby --version
-```
-
-If you have Ruby < 3.2.0, you need to upgrade. Options:
-
-#### Option 1: Install with Homebrew (macOS)
-
-```bash
-brew install ruby
-echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-#### Option 2: Use rbenv (Recommended)
-
-```bash
-# Install rbenv
-brew install rbenv ruby-build
-
-# Add to shell
-echo 'eval "$(rbenv init - zsh)"' >> ~/.zshrc
-source ~/.zshrc
-
-# Install Ruby 3.3.0 or later
-rbenv install 3.3.0
-rbenv global 3.3.0
-```
-
-#### Option 3: Use RVM
-
-```bash
-# Install RVM
-\curl -sSL https://get.rvm.io | bash -s stable
-source ~/.rvm/scripts/rvm
-
-# Install Ruby 3.3.0 or later
-rvm install 3.3.0
-rvm use 3.3.0 --default
-```
+- Node.js 18.0.0 or higher
+- npm or compatible package manager
 
 ## Installation
 
-1. Clone this repository:
+1. Clone the repository:
 
-```bash
-git clone https://github.com/damionrashford/shopify-dev-changelog-mcp.git
-cd shopify-dev-changelog-mcp
-```
+   ```bash
+   git clone https://github.com/damionrashford/shopify-dev-changelog-mcp.git
+   cd shopify-dev-changelog-mcp
+   ```
 
 2. Install dependencies:
 
-```bash
-bundle install
-```
+   ```bash
+   npm install
+   ```
 
-3. Make the server executable:
-
-```bash
-chmod +x server.rb
-```
+3. Build the project:
+   ```bash
+   npm run build
+   ```
 
 ## Usage
 
-### Standalone Testing
+### Development
 
-Test the server directly via command line:
+Run the server in development mode with auto-reload:
 
 ```bash
-bundle exec ruby server.rb
+npm run dev
 ```
 
-Then send JSON-RPC requests via stdin:
+### Production
 
-```json
-{"jsonrpc":"2.0","id":"1","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test"}}}
-{"jsonrpc":"2.0","id":"2","method":"tools/list"}
+Build and start the server:
+
+```bash
+npm run build
+npm run start
 ```
 
-### Integration with MCP Clients
+### Testing
 
-#### Cursor
+Test server initialization:
 
-Add to your Cursor MCP settings:
-
-1. Open Cursor Settings
-2. Navigate to **Features > MCP**
-3. Click **"+ Add New MCP Server"**
-4. Configure with:
-   - **Name**: Shopify Changelog
-   - **Transport Type**: stdio
-   - **Command**: `bundle`
-   - **Arguments**: `["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"]`
-
-Or add directly to your Cursor configuration:
-
-```json
-{
-  "mcpServers": {
-    "shopify-changelog": {
-      "command": "bundle",
-      "args": ["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"],
-      "cwd": "/path/to/shopify-changelog-mcp"
-    }
-  }
-}
+```bash
+npm run test
 ```
 
-#### Claude Desktop
+Manual testing with JSON-RPC:
 
-Add to your Claude Desktop configuration:
+```bash
+# Initialize server
+echo '{"jsonrpc":"2.0","id":"1","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}' | npm run start
+
+# List available tools
+echo '{"jsonrpc":"2.0","id":"2","method":"tools/list"}' | npm run start
+```
+
+## MCP Client Configuration
+
+### Cursor
+
+Add to your `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "shopify-changelog": {
-      "command": "bundle",
-      "args": ["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"],
-      "cwd": "/path/to/shopify-changelog-mcp"
+      "command": "node",
+      "args": ["/path/to/shopify-dev-changelog-mcp/dist/index.js"]
     }
   }
 }
 ```
+
+Replace `/path/to/shopify-dev-changelog-mcp` with the actual path to your installation.
 
 ## Available Tools
 
-### 1. fetch_changelog_tool
+### fetch_changelog
 
-Fetches changelog entries with filtering options.
+Fetches changelog entries with optional filtering.
 
 **Parameters:**
 
-- `filter` (required): Array of content types ["api", "tools", "platform", "themes", "shopify_app_store", "shopify_theme_store", "built_for_shopify", "polaris"]
-- `action_required`: Boolean to filter entries requiring action (default: false)
-- `api_version`: Filter by API version (2025-10, 2025-07, 2025-04, 2025-01, 2024-10, 2024-07, 2024-04, 2024-01)
-- `api_type`: Filter by API type (admin-graphql, admin-rest, storefront-graphql, customer-account-graphql, payments-apps-api, webhook, liquid, app-bridge)
-- `limit`: Maximum number of entries to return (default: 10)
+- `filter` (optional): Array of keywords to filter by (API versions, content types, or keywords)
+- `limit` (optional): Maximum number of entries to return (1-100, default: 10)
 
 **Example:**
 
 ```json
 {
-  "filter": ["api"],
-  "api_version": "2025-10",
-  "limit": 5
+  "name": "fetch_changelog",
+  "arguments": {
+    "filter": ["2024-10", "GraphQL"],
+    "limit": 5
+  }
 }
 ```
 
-### 2. search_changelog_tool
+### search_changelog
 
-Search changelog entries by keyword or topic.
+Search changelog entries by keywords or topics.
 
 **Parameters:**
 
-- `query` (required): Search term to find in entries
-- `filter`: Array of content types to search within (default: ["api", "platform", "tools"])
-- `date_from`: Filter entries from this date (YYYY-MM-DD)
-- `date_to`: Filter entries up to this date (YYYY-MM-DD)
-- `limit`: Maximum number of results (default: 10)
+- `query` (required): Search keywords
+- `filter` (optional): Additional filter by API version or content type
+- `limit` (optional): Maximum number of entries to return (1-50, default: 10)
 
 **Example:**
 
 ```json
 {
-  "query": "GraphQL",
-  "filter": ["api"],
-  "limit": 5
+  "name": "search_changelog",
+  "arguments": {
+    "query": "webhook validation",
+    "limit": 5
+  }
 }
 ```
 
-### 3. breaking_changes_tool
+### breaking_changes
 
-Get breaking changes and deprecations requiring action.
+Retrieve breaking changes and deprecation notices.
 
 **Parameters:**
 
-- `api_version`: Filter by specific API version
-- `api_type`: Filter by API type
-- `days_back`: Number of days to look back (default: 90)
-- `include_deprecations`: Include deprecation announcements (default: true)
-- `limit`: Maximum number of entries (default: 20)
+- `apiVersion` (optional): Specific API version to filter by
+- `limit` (optional): Maximum number of entries to return (1-50, default: 10)
 
 **Example:**
 
 ```json
 {
-  "days_back": 60,
-  "include_deprecations": true,
-  "limit": 10
+  "name": "breaking_changes",
+  "arguments": {
+    "apiVersion": "2024-07",
+    "limit": 10
+  }
 }
 ```
 
 ## Project Structure
 
 ```
-shopify-dev-changelog-mcp/
-├── server.rb                    # Main MCP server
-├── tools/
-│   ├── fetch_changelog_tool.rb  # Fetch filtered changelog entries
-│   ├── search_changelog_tool.rb # Search changelog by keywords
-│   └── breaking_changes_tool.rb # Get breaking changes & deprecations
-├── Gemfile                      # Ruby dependencies
-├── .rubocop.yml                 # Ruby style guide configuration
-└── README.md                    # This file
+src/
+├── index.ts              # Main server entry point
+├── server-config.ts      # Server configuration and utilities
+├── types.ts              # Shared TypeScript interfaces
+├── tools/                # MCP tool implementations
+│   ├── index.ts          # Tool exports
+│   ├── fetch-changelog.ts
+│   ├── search-changelog.ts
+│   └── breaking-changes.ts
+└── utils/                # Utility modules
+    ├── index.ts          # Utility exports
+    ├── constants.ts      # Application constants
+    ├── httpUtils.ts      # HTTP and RSS fetching
+    ├── rssParser.ts      # XML parsing with fast-xml-parser
+    ├── filterUtils.ts    # Filtering and search logic
+    └── formatUtils.ts    # Output formatting
+
+dist/                     # Compiled JavaScript output
+└── ...                   # All compiled files
 ```
 
-## Debugging
+## Scripts
 
-Enable debug logging by setting the environment variable:
+- `npm run build` - Compile TypeScript and make server executable
+- `npm run start` - Run the compiled server
+- `npm run dev` - Development mode with auto-reload
+- `npm run clean` - Remove build directory
+- `npm run rebuild` - Clean build from scratch
+- `npm run test` - Build and test server initialization
+
+## Development
+
+Enable debug logging by setting the `MCP_DEBUG` environment variable:
 
 ```bash
-MCP_DEBUG=true bundle exec ruby server.rb
+MCP_DEBUG=true npm run start
 ```
 
-Debug logs will be sent to stderr to avoid interfering with the stdio protocol.
+The server uses a modular architecture with clear separation of concerns:
+
+- Tools handle MCP protocol integration
+- Utils provide reusable business logic
+- Clean interfaces between layers
 
 ## Error Handling
 
 The server includes comprehensive error handling:
 
-- HTTP errors when fetching the RSS feed
+- Network timeouts and failures
 - XML parsing errors
-- Network timeouts (10 seconds)
-- Graceful shutdown on SIGINT/SIGTERM
-- Automatic retry logic for transient failures
+- Invalid input validation
+- Graceful degradation
 
-## Data Source
+All errors are properly formatted for MCP client consumption.
 
-This server fetches data from the official Shopify Developer Changelog RSS feed:
+## Dependencies
 
-- **URL**: https://shopify.dev/changelog/feed.xml
-- **Format**: RSS 2.0 with Atom namespace
-- **Update Frequency**: Real-time as Shopify publishes updates
+### Production
+
+- `@modelcontextprotocol/sdk` - MCP SDK for TypeScript
+- `fast-xml-parser` - Production XML parsing
+- `node-fetch` - HTTP requests
+- `xml2js` - XML utilities (legacy support)
+- `zod` - Schema validation
+
+### Development
+
+- `typescript` - TypeScript compiler
+- `@types/node` - Node.js type definitions
+- `ts-node` - Direct TypeScript execution
+- `nodemon` - Development auto-reload
 
 ## License
 
 MIT
+
+## Contributing
+
+1. Fork the repository at [https://github.com/damionrashford/shopify-dev-changelog-mcp](https://github.com/damionrashford/shopify-dev-changelog-mcp)
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Ensure TypeScript compilation succeeds
+6. Submit a pull request
