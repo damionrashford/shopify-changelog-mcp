@@ -135,8 +135,8 @@ Add to your Claude Desktop configuration:
 {
   "mcpServers": {
     "shopify-changelog": {
-      "command": "ruby",
-      "args": ["/path/to/shopify-changelog-mcp/server.rb"],
+      "command": "bundle",
+      "args": ["exec", "ruby", "/path/to/shopify-changelog-mcp/server.rb"],
       "cwd": "/path/to/shopify-changelog-mcp"
     }
   }
