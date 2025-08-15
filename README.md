@@ -121,9 +121,7 @@ Or add directly to your Cursor configuration:
     "shopify-changelog": {
       "command": "bundle",
       "args": ["exec", "ruby", "/path/to/shopify-changelog-mcp/server.rb"],
-      "env": {
-        "BUNDLE_GEMFILE": "/path/to/shopify-changelog-mcp/Gemfile"
-      }
+      "cwd": "/path/to/shopify-changelog-mcp"
     }
   }
 }
@@ -137,11 +135,9 @@ Add to your Claude Desktop configuration:
 {
   "mcpServers": {
     "shopify-changelog": {
-      "command": "/usr/bin/env",
-      "args": ["ruby", "/path/to/shopify-changelog-mcp/server.rb"],
-      "env": {
-        "BUNDLE_GEMFILE": "/path/to/shopify-changelog-mcp/Gemfile"
-      }
+      "command": "ruby",
+      "args": ["/path/to/shopify-changelog-mcp/server.rb"],
+      "cwd": "/path/to/shopify-changelog-mcp"
     }
   }
 }
