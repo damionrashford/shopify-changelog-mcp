@@ -1,0 +1,47 @@
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Bundler
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+.ruby-version
+.ruby-gemset
+.rvmrc
+Gemfile.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+/log/
+
+# Development
+/node_modules/
+/yarn-error.log
+.byebug_history
+
+# MCP specific
+mcp-debug.log
+*.pid
