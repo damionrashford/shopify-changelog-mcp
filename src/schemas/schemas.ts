@@ -28,3 +28,10 @@ export const BREAKING_CHANGES_SCHEMA = {
   apiVersion: z.string().optional().describe("Specific API version to filter by (e.g., '2024-01', '2024-07')"),
   limit: z.number().min(1).max(50).default(10).describe("Maximum number of entries to return (1-50)")
 };
+
+/**
+ * Schema for fetch_individual_post tool
+ */
+export const FETCH_INDIVIDUAL_POST_SCHEMA = {
+  url: z.string().url().describe("Full URL of the Shopify changelog post to fetch (e.g., 'https://shopify.dev/changelog/example-post')")
+};

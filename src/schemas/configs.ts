@@ -5,7 +5,8 @@
 import {
   FETCH_CHANGELOG_SCHEMA,
   SEARCH_CHANGELOG_SCHEMA,
-  BREAKING_CHANGES_SCHEMA
+  BREAKING_CHANGES_SCHEMA,
+  FETCH_INDIVIDUAL_POST_SCHEMA
 } from "./schemas.js";
 
 /**
@@ -33,4 +34,13 @@ export const BREAKING_CHANGES_CONFIG = {
   title: "Get Breaking Changes",
   description: "Retrieves breaking changes, deprecations, and migration notices from the Shopify Developer Changelog. Essential for staying updated on changes that require action.",
   inputSchema: BREAKING_CHANGES_SCHEMA
+};
+
+/**
+ * Configuration for fetch_individual_post tool
+ */
+export const FETCH_INDIVIDUAL_POST_CONFIG = {
+  title: "Fetch Individual Changelog Post",
+  description: "Fetches the full content of an individual Shopify changelog post from its URL. Returns complete post details including title, full description, categories, publication date, and all content without truncation.",
+  inputSchema: FETCH_INDIVIDUAL_POST_SCHEMA
 };

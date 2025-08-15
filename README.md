@@ -4,17 +4,21 @@ A Model Context Protocol (MCP) server that provides access to the Shopify Develo
 
 ## Overview
 
-This server exposes three main tools for accessing Shopify changelog information:
+This server exposes four main tools for accessing Shopify changelog information:
 
 - **fetch_changelog**: Retrieve changelog entries with filtering options
 - **search_changelog**: Search through changelog entries by keywords
 - **breaking_changes**: Find breaking changes and deprecations
+- **fetch_individual_post**: Get the full content of individual changelog posts
 
 ## Features
 
-- XML parsing using fast-xml-parser
+- XML parsing using fast-xml-parser for RSS feeds
+- HTML parsing using cheerio for individual post content
 - Comprehensive filtering and search capabilities
 - Breaking change detection and warnings
+- Full post content extraction with proper formatting
+- Browse-then-dive workflow: search truncated results, then fetch full posts
 - Proper error handling and logging
 - Clean, componentized architecture
 - TypeScript type safety
@@ -166,6 +170,31 @@ Retrieve breaking changes and deprecation notices.
 }
 ```
 
+### fetch_individual_post
+
+Get the complete content of an individual changelog post from its URL. Perfect for getting full details after finding interesting posts through the other tools.
+
+**Parameters:**
+
+- `url` (required): Full URL of the Shopify changelog post to fetch
+
+**Example:**
+
+```json
+{
+  "name": "fetch_individual_post",
+  "arguments": {
+    "url": "https://shopify.dev/changelog/shopify-payments-payout-graphql-type-supports-externaltraceid"
+  }
+}
+```
+
+**Typical Workflow:**
+
+1. Use `search_changelog` or `fetch_changelog` to find relevant posts (with truncated descriptions)
+2. Copy the URL from the results
+3. Use `fetch_individual_post` to get the complete post content including full descriptions, code examples, and detailed implementation notes
+
 ## Project Structure
 
 ```
@@ -173,11 +202,16 @@ src/
 ├── index.ts              # Main server entry point
 ├── server-config.ts      # Server configuration and utilities
 ├── types.ts              # Shared TypeScript interfaces
+├── schemas/              # Tool schemas and configurations
+│   ├── index.ts          # Schema exports
+│   ├── schemas.ts        # Zod validation schemas
+│   └── configs.ts        # Tool configurations
 ├── tools/                # MCP tool implementations
 │   ├── index.ts          # Tool exports
 │   ├── fetch-changelog.ts
 │   ├── search-changelog.ts
-│   └── breaking-changes.ts
+│   ├── breaking-changes.ts
+│   └── fetch-individual-post.ts
 └── utils/                # Utility modules
     ├── index.ts          # Utility exports
     ├── constants.ts      # Application constants
@@ -229,15 +263,17 @@ All errors are properly formatted for MCP client consumption.
 ### Production
 
 - `@modelcontextprotocol/sdk` - MCP SDK for TypeScript
-- `fast-xml-parser` - Production XML parsing
+- `fast-xml-parser` - XML parsing for RSS feeds
 - `node-fetch` - HTTP requests
 - `xml2js` - XML utilities (legacy support)
 - `zod` - Schema validation
+- `cheerio` - HTML parsing for individual post content
 
 ### Development
 
 - `typescript` - TypeScript compiler
 - `@types/node` - Node.js type definitions
+- `@types/cheerio` - Cheerio type definitions
 - `ts-node` - Direct TypeScript execution
 - `nodemon` - Development auto-reload
 

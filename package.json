@@ -23,6 +23,8 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.3",
+    "@types/cheerio": "^0.22.35",
+    "cheerio": "^1.1.2",
     "fast-xml-parser": "^5.2.5",
     "node-fetch": "^3.3.2",
     "xml2js": "^0.6.2",

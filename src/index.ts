@@ -11,16 +11,18 @@ import {
   FETCH_CHANGELOG_CONFIG,
   SEARCH_CHANGELOG_CONFIG, 
   BREAKING_CHANGES_CONFIG,
+  FETCH_INDIVIDUAL_POST_CONFIG,
   executeFetchChangelog,
   executeSearchChangelog,
-  executeBreakingChanges
+  executeBreakingChanges,
+  executeFetchIndividualPost
 } from "./tools/index.js";
 
 /**
  * Shopify Developer Changelog MCP Server
  * 
  * This server provides access to the Shopify Developer Changelog RSS feed
- * through three main tools: fetch_changelog, search_changelog, and breaking_changes
+ * through four main tools: fetch_changelog, search_changelog, breaking_changes, and fetch_individual_post
  */
 class ShopifyChangelogServer {
   private server: McpServer;
@@ -55,6 +57,13 @@ class ShopifyChangelogServer {
       executeBreakingChanges
     );
 
+    // Tool 4: fetch_individual_post
+    this.server.registerTool(
+      "fetch_individual_post",
+      FETCH_INDIVIDUAL_POST_CONFIG,
+      executeFetchIndividualPost
+    );
+
     debugLog('All tools registered successfully');
   }
 
@@ -65,7 +74,7 @@ class ShopifyChangelogServer {
     const transport = new StdioServerTransport();
     
     debugLog(`Starting ${SERVER_INFO.name} v${SERVER_INFO.version}`);
-    debugLog('Tools registered: 3 tools loaded successfully');
+    debugLog('Tools registered: 4 tools loaded successfully');
     
     await this.server.connect(transport);
     

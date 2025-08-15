@@ -3,7 +3,7 @@
  */
 
 /** Shopify Developer Changelog RSS feed URL */
-export const RSS_URL = 'https://changelog.shopifyapis.dev/posts.rss';
+export const RSS_URL = 'https://shopify.dev/changelog/feed.xml';
 
 /** Keywords that indicate breaking changes */
 export const BREAKING_KEYWORDS = [
@@ -17,8 +17,8 @@ export const BREAKING_KEYWORDS = [
 
 /** Default limits for various operations */
 export const DEFAULT_LIMITS = {
-  FETCH: 10,
-  SEARCH: 10,
-  BREAKING_CHANGES: 10,
+  FETCH: 20,  // Increased due to compact formatting
+  SEARCH: 15, // Increased due to compact formatting  
+  BREAKING_CHANGES: 15, // Increased due to compact formatting
   SEARCH_FETCH: 100 // Higher limit for search operations to get more results to filter
 } as const;
