@@ -65,8 +65,8 @@ rvm use 3.3.0 --default
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/your-username/shopify-changelog-mcp.git
-cd shopify-changelog-mcp
+git clone https://github.com/damionrashford/shopify-dev-changelog-mcp.git
+cd shopify-dev-changelog-mcp
 ```
 
 2. Install dependencies:
@@ -111,7 +111,7 @@ Add to your Cursor MCP settings:
    - **Name**: Shopify Changelog
    - **Transport Type**: stdio
    - **Command**: `bundle`
-   - **Arguments**: `["exec", "ruby", "/path/to/shopify-changelog-mcp/server.rb"]`
+   - **Arguments**: `["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"]`
 
 Or add directly to your Cursor configuration:
 
@@ -120,7 +120,7 @@ Or add directly to your Cursor configuration:
   "mcpServers": {
     "shopify-changelog": {
       "command": "bundle",
-      "args": ["exec", "ruby", "/path/to/shopify-changelog-mcp/server.rb"],
+      "args": ["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"],
       "cwd": "/path/to/shopify-changelog-mcp"
     }
   }
@@ -136,7 +136,7 @@ Add to your Claude Desktop configuration:
   "mcpServers": {
     "shopify-changelog": {
       "command": "bundle",
-      "args": ["exec", "ruby", "/path/to/shopify-changelog-mcp/server.rb"],
+      "args": ["exec", "ruby", "/path/to/shopify-dev-changelog-mcp/server.rb"],
       "cwd": "/path/to/shopify-changelog-mcp"
     }
   }
@@ -214,7 +214,7 @@ Get breaking changes and deprecations requiring action.
 ## Project Structure
 
 ```
-shopify-changelog-mcp/
+shopify-dev-changelog-mcp/
 ├── server.rb                    # Main MCP server
 ├── tools/
 │   ├── fetch_changelog_tool.rb  # Fetch filtered changelog entries
