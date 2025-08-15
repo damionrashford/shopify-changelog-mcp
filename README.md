@@ -265,7 +265,6 @@ All errors are properly formatted for MCP client consumption.
 - `@modelcontextprotocol/sdk` - MCP SDK for TypeScript
 - `fast-xml-parser` - XML parsing for RSS feeds
 - `node-fetch` - HTTP requests
-- `xml2js` - XML utilities (legacy support)
 - `zod` - Schema validation
 - `cheerio` - HTML parsing for individual post content
 
