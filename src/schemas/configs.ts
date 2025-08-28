@@ -3,44 +3,70 @@
  */
 
 import {
-  FETCH_CHANGELOG_SCHEMA,
-  SEARCH_CHANGELOG_SCHEMA,
-  BREAKING_CHANGES_SCHEMA,
-  FETCH_INDIVIDUAL_POST_SCHEMA
+  DEV_SEARCH_SCHEMA,
+  DEV_BREAKING_CHANGES_SCHEMA,
+  DEV_RECENT_SCHEMA,
+  PLATFORM_SEARCH_SCHEMA,
+  PLATFORM_CATEGORY_SCHEMA,
+  PLATFORM_RECENT_SCHEMA,
+  GET_POST_SCHEMA,
+  SEARCH_ALL_SCHEMA
 } from "./schemas.js";
 
 /**
- * Configuration for fetch_changelog tool
+ * Developer changelog tool configurations
  */
-export const FETCH_CHANGELOG_CONFIG = {
-  title: "Fetch Shopify Changelog",
-  description: "Fetches the Shopify Developer Changelog RSS feed with comprehensive filtering options. Supports filtering by API versions, content types, and limiting results.",
-  inputSchema: FETCH_CHANGELOG_SCHEMA
+export const DEV_SEARCH_CONFIG = {
+  title: "Search Developer Changelog",
+  description: "Search the Shopify Developer Changelog for API updates, deprecations, and technical changes. Returns up to 15 recent matches.",
+  inputSchema: DEV_SEARCH_SCHEMA
+};
+
+export const DEV_BREAKING_CHANGES_CONFIG = {
+  title: "Developer Breaking Changes",
+  description: "Get breaking changes, deprecations, and migration notices from the Developer Changelog. Essential for maintaining API compatibility.",
+  inputSchema: DEV_BREAKING_CHANGES_SCHEMA
+};
+
+export const DEV_RECENT_CONFIG = {
+  title: "Recent Developer Updates",
+  description: "Get recent updates from the Developer Changelog. Specify days to look back (1, 3, 7, 14, or 30).",
+  inputSchema: DEV_RECENT_SCHEMA
 };
 
 /**
- * Configuration for search_changelog tool
+ * Platform changelog tool configurations
  */
-export const SEARCH_CHANGELOG_CONFIG = {
-  title: "Search Shopify Changelog",
-  description: "Search the Shopify Developer Changelog for specific keywords or topics. Searches through titles, descriptions, and categories.",
-  inputSchema: SEARCH_CHANGELOG_SCHEMA
+export const PLATFORM_SEARCH_CONFIG = {
+  title: "Search Platform Changelog",
+  description: "Search the Shopify Platform Changelog for product updates, new features, and merchant-facing changes. Returns up to 15 recent matches.",
+  inputSchema: PLATFORM_SEARCH_SCHEMA
+};
+
+export const PLATFORM_CATEGORY_CONFIG = {
+  title: "Platform Category Updates",
+  description: "Get updates from specific platform categories like POS, Admin, Checkout, Payments, etc. Optionally filter by recent days.",
+  inputSchema: PLATFORM_CATEGORY_SCHEMA
+};
+
+export const PLATFORM_RECENT_CONFIG = {
+  title: "Recent Platform Updates",
+  description: "Get recent updates from the Platform Changelog. Specify days to look back (1, 3, 7, 14, or 30).",
+  inputSchema: PLATFORM_RECENT_SCHEMA
 };
 
 /**
- * Configuration for breaking_changes tool
+ * Universal tool configurations
  */
-export const BREAKING_CHANGES_CONFIG = {
-  title: "Get Breaking Changes",
-  description: "Retrieves breaking changes, deprecations, and migration notices from the Shopify Developer Changelog. Essential for staying updated on changes that require action.",
-  inputSchema: BREAKING_CHANGES_SCHEMA
+export const GET_POST_CONFIG = {
+  title: "Get Changelog Post",
+  description: "Get the full content of a specific changelog post from either Developer or Platform changelog. Provide the full URL.",
+  inputSchema: GET_POST_SCHEMA
 };
 
-/**
- * Configuration for fetch_individual_post tool
- */
-export const FETCH_INDIVIDUAL_POST_CONFIG = {
-  title: "Fetch Individual Changelog Post",
-  description: "Fetches the full content of an individual Shopify changelog post from its URL. Returns complete post details including title, full description, categories, publication date, and all content without truncation.",
-  inputSchema: FETCH_INDIVIDUAL_POST_SCHEMA
+export const SEARCH_ALL_CONFIG = {
+  title: "Search All Changelogs",
+  description: "Search across both Developer and Platform changelogs simultaneously. Returns combined results sorted by date.",
+  inputSchema: SEARCH_ALL_SCHEMA
 };
+

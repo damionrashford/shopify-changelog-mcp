@@ -1,12 +1,11 @@
 /**
- * Search Changelog Tool - Search changelog by keyword or topic
+ * Platform Search Tool - Search platform changelog by keyword
  */
 
 import {
   DEFAULT_LIMITS,
-  fetchRSSFeed,
+  fetchPlatformRSSFeed,
   parseRSSXML,
-  filterEntriesByKeywords,
   searchEntries,
   sortEntriesByDate,
   limitEntries,
@@ -15,21 +14,22 @@ import {
 } from "../utils/index.js";
 import type { ToolResponse } from "../types.js";
 
-export async function executeSearchChangelog({ 
-  query, 
-  filter = [], 
+export async function executePlatformSearch({ 
+  query,
   limit = DEFAULT_LIMITS.SEARCH 
 }: { 
   query: string;
-  filter?: string[];
   limit?: number;
 }): Promise<ToolResponse> {
   try {
-    // Fetch RSS feed
-    const xmlText = await fetchRSSFeed();
+    // Fetch platform RSS feed (all categories)
+    const xmlText = await fetchPlatformRSSFeed();
     
     // Parse RSS XML
     let entries = parseRSSXML(xmlText);
+    
+    // Add source attribution
+    entries = entries.map(entry => ({ ...entry, source: 'platform' as const }));
     
     // Remove duplicates
     entries = removeDuplicateEntries(entries);
@@ -37,27 +37,16 @@ export async function executeSearchChangelog({
     // Sort by date (newest first)
     entries = sortEntriesByDate(entries, false);
     
-    // Apply keyword filters first if specified
-    if (filter.length > 0) {
-      entries = filterEntriesByKeywords(entries, filter);
-    }
-    
     // Perform search
     const matchedEntries = searchEntries(entries, query);
     
     // Apply limit
-    const limitedEntries = limitEntries(matchedEntries, limit);
+    const limitedEntries = limitEntries(matchedEntries, Math.min(limit, DEFAULT_LIMITS.MAX_ALLOWED));
     
     // Format entries
     const formattedEntries = formatChangelogEntries(limitedEntries);
     
-    let summary = `Found ${matchedEntries.length} entries matching "${query}"`;
-    if (filter.length > 0) {
-      summary += ` with filter: ${filter.join(', ')}`;
-    }
-    if (limitedEntries.length < matchedEntries.length) {
-      summary += ` (showing first ${limitedEntries.length})`;
-    }
+    const summary = `🛍️ Platform Changelog - Found ${matchedEntries.length} entries matching "${query}"${limitedEntries.length < matchedEntries.length ? ` (showing first ${limitedEntries.length})` : ''}`;
     
     return {
       content: [{
@@ -70,8 +59,10 @@ export async function executeSearchChangelog({
       isError: true,
       content: [{
         type: "text",
-        text: `Error searching changelog: ${error instanceof Error ? error.message : String(error)}`
+        text: `Error searching platform changelog: ${error instanceof Error ? error.message : String(error)}`
       }]
     };
   }
 }
+
+

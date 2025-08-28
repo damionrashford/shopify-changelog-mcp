@@ -4,67 +4,150 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 // Import server configuration and utilities
-import { SERVER_INFO, debugLog, setupGracefulShutdown } from "./server-config.js";
+import { 
+  SERVER_INFO, 
+  debugLog, 
+  setupGracefulShutdown,
+  getEnabledSources 
+} from "./server-config.js";
 
 // Import tool configurations and handlers
 import {
-  FETCH_CHANGELOG_CONFIG,
-  SEARCH_CHANGELOG_CONFIG, 
-  BREAKING_CHANGES_CONFIG,
-  FETCH_INDIVIDUAL_POST_CONFIG,
-  executeFetchChangelog,
-  executeSearchChangelog,
-  executeBreakingChanges,
-  executeFetchIndividualPost
+  // Developer tools
+  DEV_SEARCH_CONFIG,
+  DEV_BREAKING_CHANGES_CONFIG,
+  DEV_RECENT_CONFIG,
+  executeDevSearch,
+  executeDevBreakingChanges,
+  executeDevRecent,
+  
+  // Platform tools
+  PLATFORM_SEARCH_CONFIG,
+  PLATFORM_CATEGORY_CONFIG,
+  PLATFORM_RECENT_CONFIG,
+  executePlatformSearch,
+  executePlatformCategory,
+  executePlatformRecent,
+  
+  // Universal tools
+  GET_POST_CONFIG,
+  SEARCH_ALL_CONFIG,
+  executeGetPost,
+  executeSearchAll
 } from "./tools/index.js";
 
 /**
- * Shopify Developer Changelog MCP Server
+ * Shopify Changelog MCP Server
  * 
- * This server provides access to the Shopify Developer Changelog RSS feed
- * through four main tools: fetch_changelog, search_changelog, breaking_changes, and fetch_individual_post
+ * Provides access to both Developer and Platform Shopify changelogs
+ * with configurable source selection via environment variables
  */
 class ShopifyChangelogServer {
   private server: McpServer;
+  private enabledSources: ReturnType<typeof getEnabledSources>;
+  private toolCount: number = 0;
 
   constructor() {
     this.server = new McpServer(SERVER_INFO);
+    this.enabledSources = getEnabledSources();
     this.registerTools();
   }
 
   /**
-   * Register all MCP tools with the server
+   * Register all MCP tools conditionally based on enabled sources
    */
   private registerTools(): void {
-    // Tool 1: fetch_changelog
+    const sources = this.enabledSources;
+    
+    debugLog(`Enabled sources: developer=${sources.developer}, platform=${sources.platform}`);
+    
+    // Count enabled sources
+    const enabledCount = [sources.developer, sources.platform].filter(Boolean).length;
+    
+    // Universal tool - always available
     this.server.registerTool(
-      "fetch_changelog",
-      FETCH_CHANGELOG_CONFIG,
-      executeFetchChangelog
+      "get_post",
+      GET_POST_CONFIG,
+      executeGetPost
     );
-
-    // Tool 2: search_changelog 
-    this.server.registerTool(
-      "search_changelog",
-      SEARCH_CHANGELOG_CONFIG,
-      executeSearchChangelog
-    );
-
-    // Tool 3: breaking_changes
-    this.server.registerTool(
-      "breaking_changes",
-      BREAKING_CHANGES_CONFIG,
-      executeBreakingChanges
-    );
-
-    // Tool 4: fetch_individual_post
-    this.server.registerTool(
-      "fetch_individual_post",
-      FETCH_INDIVIDUAL_POST_CONFIG,
-      executeFetchIndividualPost
-    );
-
-    debugLog('All tools registered successfully');
+    this.toolCount++;
+    
+    // Developer tools (if enabled)
+    if (sources.developer) {
+      // If only developer is enabled, use simple names
+      const prefix = enabledCount === 1 ? '' : 'dev_';
+      
+      this.server.registerTool(
+        `${prefix}search${prefix ? '' : '_changelog'}`,
+        DEV_SEARCH_CONFIG,
+        executeDevSearch
+      );
+      
+      this.server.registerTool(
+        `${prefix}breaking_changes`,
+        DEV_BREAKING_CHANGES_CONFIG,
+        executeDevBreakingChanges
+      );
+      
+      this.server.registerTool(
+        `${prefix}recent`,
+        DEV_RECENT_CONFIG,
+        executeDevRecent
+      );
+      
+      this.toolCount += 3;
+      
+      debugLog('Developer changelog tools registered');
+    }
+    
+    // Platform tools (if enabled)
+    if (sources.platform) {
+      // If only platform is enabled, use simple names
+      const prefix = enabledCount === 1 ? '' : 'platform_';
+      
+      this.server.registerTool(
+        `${prefix}search${prefix ? '' : '_changelog'}`,
+        PLATFORM_SEARCH_CONFIG,
+        executePlatformSearch
+      );
+      
+      this.server.registerTool(
+        `${prefix}category`,
+        PLATFORM_CATEGORY_CONFIG,
+        executePlatformCategory
+      );
+      
+      this.server.registerTool(
+        `${prefix}recent`,
+        PLATFORM_RECENT_CONFIG,
+        executePlatformRecent
+      );
+      
+      this.toolCount += 3;
+      debugLog('Platform changelog tools registered');
+    }
+    
+    // Combined search tool (only if both sources are enabled)
+    if (sources.developer && sources.platform) {
+      this.server.registerTool(
+        "search_all",
+        SEARCH_ALL_CONFIG,
+        executeSearchAll
+      );
+      this.toolCount++;
+      debugLog('Combined search tool registered');
+    }
+    
+    // Validation: ensure at least one source is enabled
+    if (!sources.developer && !sources.platform) {
+      console.warn('Warning: No changelog sources enabled. Enabling developer by default.');
+      // Re-register with developer tools
+      this.enabledSources.developer = true;
+      this.registerTools();
+      return;
+    }
+    
+    debugLog(`Total tools registered: ${this.toolCount}`);
   }
 
   /**
@@ -73,8 +156,13 @@ class ShopifyChangelogServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     
+    const sourcesText = [];
+    if (this.enabledSources.developer) sourcesText.push('Developer');
+    if (this.enabledSources.platform) sourcesText.push('Platform');
+    
     debugLog(`Starting ${SERVER_INFO.name} v${SERVER_INFO.version}`);
-    debugLog('Tools registered: 4 tools loaded successfully');
+    debugLog(`Active changelog sources: ${sourcesText.join(', ')}`);
+    debugLog(`Tools available: ${this.toolCount}`);
     
     await this.server.connect(transport);
     

@@ -117,6 +117,21 @@ export function limitEntries(entries: ChangelogEntry[], limit: number): Changelo
 }
 
 /**
+ * Filter entries by recent days
+ */
+export function filterByRecentDays(entries: ChangelogEntry[], days: number): ChangelogEntry[] {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  cutoffDate.setHours(0, 0, 0, 0); // Start of day
+  
+  return entries.filter(entry => {
+    if (!entry.pubDate) return false;
+    const entryDate = new Date(entry.pubDate);
+    return !isNaN(entryDate.getTime()) && entryDate >= cutoffDate;
+  });
+}
+
+/**
  * Remove duplicate entries based on link or title
  */
 export function removeDuplicateEntries(entries: ChangelogEntry[]): ChangelogEntry[] {

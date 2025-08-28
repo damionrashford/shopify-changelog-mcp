@@ -1,13 +1,12 @@
 /**
- * Breaking Changes Tool - Get breaking changes and deprecations
+ * Developer Breaking Changes Tool - Get breaking changes and deprecations
  */
 
 import {
   DEFAULT_LIMITS,
-  fetchRSSFeed,
+  fetchDeveloperRSSFeed,
   parseRSSXML,
   filterBreakingChanges,
-  filterByAPIVersion,
   sortEntriesByDate,
   limitEntries,
   removeDuplicateEntries,
@@ -16,19 +15,20 @@ import {
 } from "../utils/index.js";
 import type { ToolResponse } from "../types.js";
 
-export async function executeBreakingChanges({ 
-  apiVersion, 
+export async function executeDevBreakingChanges({ 
   limit = DEFAULT_LIMITS.BREAKING_CHANGES 
 }: { 
-  apiVersion?: string;
   limit?: number;
 }): Promise<ToolResponse> {
   try {
-    // Fetch RSS feed
-    const xmlText = await fetchRSSFeed();
+    // Fetch developer RSS feed
+    const xmlText = await fetchDeveloperRSSFeed();
     
     // Parse RSS XML
     let entries = parseRSSXML(xmlText);
+    
+    // Add source attribution
+    entries = entries.map(entry => ({ ...entry, source: 'developer' as const }));
     
     // Remove duplicates
     entries = removeDuplicateEntries(entries);
@@ -36,27 +36,16 @@ export async function executeBreakingChanges({
     // Sort by date (newest first)
     entries = sortEntriesByDate(entries, false);
     
-    // Apply API version filter first if specified
-    if (apiVersion) {
-      entries = filterByAPIVersion(entries, apiVersion);
-    }
-    
     // Filter for breaking changes
     let breakingEntries = filterBreakingChanges(entries);
     
     // Apply limit
-    const limitedEntries = limitEntries(breakingEntries, limit);
+    const limitedEntries = limitEntries(breakingEntries, Math.min(limit, DEFAULT_LIMITS.MAX_ALLOWED));
     
     // Format entries
     const formattedEntries = formatChangelogEntries(limitedEntries);
     
-    let summary = `Found ${breakingEntries.length} breaking changes/deprecations`;
-    if (apiVersion) {
-      summary += ` for API version ${apiVersion}`;
-    }
-    if (limitedEntries.length < breakingEntries.length) {
-      summary += ` (showing first ${limitedEntries.length})`;
-    }
+    const summary = `📘 Developer Changelog - Found ${breakingEntries.length} breaking changes/deprecations${limitedEntries.length < breakingEntries.length ? ` (showing first ${limitedEntries.length})` : ''}`;
     
     // Add a warning about the importance of breaking changes
     const warningText = formatBreakingChangesWarning(limitedEntries.length);
@@ -72,8 +61,10 @@ export async function executeBreakingChanges({
       isError: true,
       content: [{
         type: "text",
-        text: `Error fetching breaking changes: ${error instanceof Error ? error.message : String(error)}`
+        text: `Error fetching developer breaking changes: ${error instanceof Error ? error.message : String(error)}`
       }]
     };
   }
 }
+
+

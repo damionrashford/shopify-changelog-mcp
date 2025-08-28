@@ -5,33 +5,70 @@
 import { z } from "zod";
 
 /**
- * Schema for fetch_changelog tool
+ * Schema for dev_search tool
  */
-export const FETCH_CHANGELOG_SCHEMA = {
-  filter: z.array(z.string()).optional().describe("Filter entries by API version, content type, or keyword (e.g., ['api', '2024-01'])"),
-  limit: z.number().min(1).max(100).default(10).describe("Maximum number of entries to return (1-100)")
+export const DEV_SEARCH_SCHEMA = {
+  query: z.string().min(1).describe("Search query - keywords to search for in developer changelog"),
+  limit: z.number().min(1).max(30).default(15).describe("Maximum number of entries to return (1-30)")
 };
 
 /**
- * Schema for search_changelog tool
+ * Schema for dev_breaking_changes tool
  */
-export const SEARCH_CHANGELOG_SCHEMA = {
-  query: z.string().min(1).describe("Search query - keywords to search for in changelog entries"),
-  filter: z.array(z.string()).optional().describe("Additional filter by API version or content type"),
-  limit: z.number().min(1).max(50).default(10).describe("Maximum number of entries to return (1-50)")
+export const DEV_BREAKING_CHANGES_SCHEMA = {
+  limit: z.number().min(1).max(30).default(15).describe("Maximum number of entries to return (1-30)")
 };
 
 /**
- * Schema for breaking_changes tool
+ * Schema for dev_recent tool
  */
-export const BREAKING_CHANGES_SCHEMA = {
-  apiVersion: z.string().optional().describe("Specific API version to filter by (e.g., '2024-01', '2024-07')"),
-  limit: z.number().min(1).max(50).default(10).describe("Maximum number of entries to return (1-50)")
+export const DEV_RECENT_SCHEMA = {
+  days: z.number().default(7).describe("Number of days to look back (1, 3, 7, 14, or 30)"),
+  limit: z.number().min(1).max(30).default(10).describe("Maximum number of entries to return (1-30)")
 };
 
 /**
- * Schema for fetch_individual_post tool
+ * Schema for platform_search tool
  */
-export const FETCH_INDIVIDUAL_POST_SCHEMA = {
-  url: z.string().url().describe("Full URL of the Shopify changelog post to fetch (e.g., 'https://shopify.dev/changelog/example-post')")
+export const PLATFORM_SEARCH_SCHEMA = {
+  query: z.string().min(1).describe("Search query - keywords to search for in platform changelog"),
+  limit: z.number().min(1).max(30).default(15).describe("Maximum number of entries to return (1-30)")
 };
+
+/**
+ * Schema for platform_category tool
+ */
+export const PLATFORM_CATEGORY_SCHEMA = {
+  category: z.union([
+    z.string().describe("Platform category (e.g., 'pos', 'admin', 'checkout')"),
+    z.array(z.string()).describe("Multiple categories to fetch")
+  ]).describe("Category or categories to fetch updates from"),
+  days: z.number().optional().describe("Optional: filter by number of days (1, 3, 7, 14, or 30)"),
+  limit: z.number().min(1).max(30).default(10).describe("Maximum number of entries to return (1-30)")
+};
+
+/**
+ * Schema for platform_recent tool
+ */
+export const PLATFORM_RECENT_SCHEMA = {
+  days: z.number().default(7).describe("Number of days to look back (1, 3, 7, 14, or 30)"),
+  limit: z.number().min(1).max(30).default(10).describe("Maximum number of entries to return (1-30)")
+};
+
+/**
+ * Schema for get_post tool
+ */
+export const GET_POST_SCHEMA = {
+  url: z.string().url().describe("Full URL of the changelog post (from either shopify.dev/changelog or changelog.shopify.com)")
+};
+
+/**
+ * Schema for search_all tool
+ */
+export const SEARCH_ALL_SCHEMA = {
+  query: z.string().min(1).describe("Search query - keywords to search across all enabled changelogs"),
+  sources: z.array(z.enum(['developer', 'platform'])).optional()
+    .describe("Optional: specify which sources to search (defaults to all enabled)"),
+  limit: z.number().min(1).max(30).default(15).describe("Maximum number of entries to return (1-30)")
+};
+

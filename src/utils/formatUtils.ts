@@ -8,12 +8,14 @@ import type { ChangelogEntry } from "../types.js";
  * Format a single changelog entry for display (compact single-line format)
  */
 export function formatEntry(entry: ChangelogEntry, index: number = 0): string {
+  const sourceIcon = entry.source === 'platform' ? '🛍️' : '📘';
+  const sourceLabel = entry.source === 'platform' ? '[Platform]' : '[Developer]';
   const categories = entry.categories.length > 0 ? `[${entry.categories.join(', ')}]` : '';
   const date = formatDateCompact(entry.pubDate);
   const cleanDescription = stripHTMLTags(entry.description);
   const truncatedDescription = truncateText(cleanDescription, 120);
   
-  return `${index + 1}. ${entry.title} ${categories} | ${date} | ${entry.link} | ${truncatedDescription}`;
+  return `${index + 1}. ${sourceIcon} ${sourceLabel} ${entry.title} ${categories} | ${date} | ${entry.link} | ${truncatedDescription}`;
 }
 
 /**

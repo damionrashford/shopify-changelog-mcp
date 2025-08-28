@@ -2,7 +2,7 @@
  * HTTP utilities for fetching external resources
  */
 
-import { RSS_URL } from "./constants.js";
+import { RSS_URL, RSS_URLS, type PlatformCategory } from "./constants.js";
 
 /**
  * HTTP request configuration
@@ -47,6 +47,27 @@ export async function fetchRSSFeed(url: string = RSS_URL): Promise<string> {
     
     throw new Error(`Failed to fetch RSS feed: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+/**
+ * Fetch developer changelog RSS feed
+ */
+export async function fetchDeveloperRSSFeed(): Promise<string> {
+  return fetchRSSFeed(RSS_URLS.DEVELOPER);
+}
+
+/**
+ * Fetch platform changelog RSS feed with optional category filtering
+ */
+export async function fetchPlatformRSSFeed(categories?: PlatformCategory[]): Promise<string> {
+  let url: string = RSS_URLS.PLATFORM;
+  
+  if (categories && categories.length > 0) {
+    const categoryParam = categories.join(',');
+    url = `${url}?category=${categoryParam}`;
+  }
+  
+  return fetchRSSFeed(url);
 }
 
 /**

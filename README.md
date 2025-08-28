@@ -1,27 +1,24 @@
-# Shopify Developer Changelog MCP Server
+# Shopify Changelog MCP Server
 
-A Model Context Protocol (MCP) server that provides access to the Shopify Developer Changelog RSS feed. Built with TypeScript and designed for integration with MCP-compatible clients like Cursor.
+A Model Context Protocol (MCP) server that provides access to both Shopify Developer and Platform changelog RSS feeds. Built with TypeScript and designed for integration with MCP-compatible clients like Cursor.
 
 ## Overview
 
-This server exposes four main tools for accessing Shopify changelog information:
+This server exposes 8 specialized tools for accessing Shopify changelog information across two sources:
 
-- **fetch_changelog**: Retrieve changelog entries with filtering options
-- **search_changelog**: Search through changelog entries by keywords
-- **breaking_changes**: Find breaking changes and deprecations
-- **fetch_individual_post**: Get the full content of individual changelog posts
+- **Developer Changelog** (`shopify.dev/changelog`) - API updates, deprecations, technical changes
+- **Platform Changelog** (`changelog.shopify.com`) - Product updates, merchant features, UI changes
 
 ## Features
 
-- XML parsing using fast-xml-parser for RSS feeds
-- HTML parsing using cheerio for individual post content
-- Comprehensive filtering and search capabilities
-- Breaking change detection and warnings
-- Full post content extraction with proper formatting
-- Browse-then-dive workflow: search truncated results, then fetch full posts
-- Proper error handling and logging
-- Clean, componentized architecture
-- TypeScript type safety
+- **Dual Source Support**: Access both Developer and Platform changelogs
+- **Configurable Sources**: Enable/disable sources via environment variables
+- **Smart Limits**: Never overwhelms with data (10-30 entries max per request)
+- **Category Filtering**: Platform changelog supports 19+ category filters
+- **Recent Updates**: Filter by time period (1, 3, 7, 14, or 30 days)
+- **Unified Search**: Search across both sources simultaneously
+- **Source Attribution**: Clear indication of which changelog each result comes from
+- **Full Content Retrieval**: Fetch complete post content when needed
 
 ## Requirements
 
@@ -33,8 +30,8 @@ This server exposes four main tools for accessing Shopify changelog information:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/damionrashford/shopify-dev-changelog-mcp.git
-   cd shopify-dev-changelog-mcp
+   git clone https://github.com/damionrashford/shopify-changelog-mcp.git
+   cd shopify-changelog-mcp
    ```
 
 2. Install dependencies:
@@ -48,46 +45,9 @@ This server exposes four main tools for accessing Shopify changelog information:
    npm run build
    ```
 
-## Usage
+## Configuration
 
-### Development
-
-Run the server in development mode with auto-reload:
-
-```bash
-npm run dev
-```
-
-### Production
-
-Build and start the server:
-
-```bash
-npm run build
-npm run start
-```
-
-### Testing
-
-Test server initialization:
-
-```bash
-npm run test
-```
-
-Manual testing with JSON-RPC:
-
-```bash
-# Initialize server
-echo '{"jsonrpc":"2.0","id":"1","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}' | npm run start
-
-# List available tools
-echo '{"jsonrpc":"2.0","id":"2","method":"tools/list"}' | npm run start
-```
-
-## MCP Client Configuration
-
-### Cursor
+### Cursor Integration
 
 Add to your `~/.cursor/mcp.json`:
 
@@ -96,195 +56,223 @@ Add to your `~/.cursor/mcp.json`:
   "mcpServers": {
     "shopify-changelog": {
       "command": "node",
-      "args": ["/path/to/shopify-dev-changelog-mcp/dist/index.js"]
+      "args": ["/path/to/shopify-changelog-mcp/dist/index.js"],
+      "env": {
+        "developer_changelog": "true",
+        "platform_changelog": "true"
+      }
     }
   }
 }
 ```
 
-Replace `/path/to/shopify-dev-changelog-mcp` with the actual path to your installation.
+### Environment Variables
 
-## Available Tools
-
-### fetch_changelog
-
-Fetches changelog entries with optional filtering.
-
-**Parameters:**
-
-- `filter` (optional): Array of keywords to filter by (API versions, content types, or keywords)
-- `limit` (optional): Maximum number of entries to return (1-100, default: 10)
-
-**Example:**
+Both sources are enabled by default. You can customize which sources are available:
 
 ```json
 {
-  "name": "fetch_changelog",
-  "arguments": {
-    "filter": ["2024-10", "GraphQL"],
-    "limit": 5
+  "env": {
+    "developer_changelog": "true", // Set to "false" to disable
+    "platform_changelog": "true" // Set to "false" to disable
   }
 }
 ```
 
-### search_changelog
+#### Configuration Examples:
 
-Search changelog entries by keywords or topics.
+**Both Sources (Default)**
+
+```json
+// No env needed, both enabled by default
+{
+  "command": "node",
+  "args": ["/path/to/dist/index.js"]
+}
+```
+
+**Developer Only**
+
+```json
+{
+  "env": {
+    "developer_changelog": "true",
+    "platform_changelog": "false"
+  }
+}
+```
+
+**Platform Only**
+
+```json
+{
+  "env": {
+    "developer_changelog": "false",
+    "platform_changelog": "true"
+  }
+}
+```
+
+## Available Tools
+
+The tools available depend on which sources are enabled:
+
+### When Both Sources Enabled (Default)
+
+#### Developer Tools
+
+- **`dev_search`** - Search developer changelog for API updates
+- **`dev_breaking_changes`** - Find breaking changes and deprecations
+- **`dev_recent`** - Get recent developer updates (configurable days)
+
+#### Platform Tools
+
+- **`platform_search`** - Search platform changelog for product updates
+- **`platform_category`** - Get updates from specific categories (POS, Admin, etc.)
+- **`platform_recent`** - Get recent platform updates (configurable days)
+
+#### Universal Tools
+
+- **`get_post`** - Get full content of any changelog post
+- **`search_all`** - Search both changelogs simultaneously
+
+### When Only One Source Enabled
+
+Tools use simplified names (no prefix) when only one source is active.
+
+## Tool Details
+
+### dev_search / platform_search
+
+Search for specific topics or keywords in the respective changelog.
 
 **Parameters:**
 
 - `query` (required): Search keywords
-- `filter` (optional): Additional filter by API version or content type
-- `limit` (optional): Maximum number of entries to return (1-50, default: 10)
+- `limit` (optional): Max results (1-30, default: 15)
 
 **Example:**
 
 ```json
 {
-  "name": "search_changelog",
+  "name": "dev_search",
   "arguments": {
-    "query": "webhook validation",
-    "limit": 5
-  }
-}
-```
-
-### breaking_changes
-
-Retrieve breaking changes and deprecation notices.
-
-**Parameters:**
-
-- `apiVersion` (optional): Specific API version to filter by
-- `limit` (optional): Maximum number of entries to return (1-50, default: 10)
-
-**Example:**
-
-```json
-{
-  "name": "breaking_changes",
-  "arguments": {
-    "apiVersion": "2024-07",
+    "query": "GraphQL mutations",
     "limit": 10
   }
 }
 ```
 
-### fetch_individual_post
+### dev_recent / platform_recent
 
-Get the complete content of an individual changelog post from its URL. Perfect for getting full details after finding interesting posts through the other tools.
+Get recent updates from the specified time period.
 
 **Parameters:**
 
-- `url` (required): Full URL of the Shopify changelog post to fetch
+- `days` (optional): Look back period - 1, 3, 7, 14, or 30 (default: 7)
+- `limit` (optional): Max results (1-30, default: 10)
 
 **Example:**
 
 ```json
 {
-  "name": "fetch_individual_post",
+  "name": "platform_recent",
   "arguments": {
-    "url": "https://shopify.dev/changelog/shopify-payments-payout-graphql-type-supports-externaltraceid"
+    "days": 3,
+    "limit": 15
   }
 }
 ```
 
-**Typical Workflow:**
+### platform_category
 
-1. Use `search_changelog` or `fetch_changelog` to find relevant posts (with truncated descriptions)
-2. Copy the URL from the results
-3. Use `fetch_individual_post` to get the complete post content including full descriptions, code examples, and detailed implementation notes
+Get updates from specific platform categories.
 
-## Project Structure
+**Parameters:**
 
-```
-src/
-├── index.ts              # Main server entry point
-├── server-config.ts      # Server configuration and utilities
-├── types.ts              # Shared TypeScript interfaces
-├── schemas/              # Tool schemas and configurations
-│   ├── index.ts          # Schema exports
-│   ├── schemas.ts        # Zod validation schemas
-│   └── configs.ts        # Tool configurations
-├── tools/                # MCP tool implementations
-│   ├── index.ts          # Tool exports
-│   ├── fetch-changelog.ts
-│   ├── search-changelog.ts
-│   ├── breaking-changes.ts
-│   └── fetch-individual-post.ts
-└── utils/                # Utility modules
-    ├── index.ts          # Utility exports
-    ├── constants.ts      # Application constants
-    ├── httpUtils.ts      # HTTP and RSS fetching
-    ├── rssParser.ts      # XML parsing with fast-xml-parser
-    ├── filterUtils.ts    # Filtering and search logic
-    └── formatUtils.ts    # Output formatting
+- `category` (required): Category name or array of names
+- `days` (optional): Filter by recent days
+- `limit` (optional): Max results (1-30, default: 10)
 
-dist/                     # Compiled JavaScript output
-└── ...                   # All compiled files
+**Available Categories:**
+
+- `admin`, `analytics`, `apps`, `b2b`, `checkout`
+- `collective`, `customers`, `international`, `inventory`
+- `marketing`, `mobile`, `online-store`, `orders`
+- `payments`, `pos`, `products`, `shipping`, `shop`, `themes`
+
+**Example:**
+
+```json
+{
+  "name": "platform_category",
+  "arguments": {
+    "category": ["pos", "payments"],
+    "days": 7
+  }
+}
 ```
 
-## Scripts
+### dev_breaking_changes
 
-- `npm run build` - Compile TypeScript and make server executable
-- `npm run start` - Run the compiled server
-- `npm run dev` - Development mode with auto-reload
-- `npm run clean` - Remove build directory
-- `npm run rebuild` - Clean build from scratch
-- `npm run test` - Build and test server initialization
+Get breaking changes and deprecation notices from the developer changelog.
+
+**Parameters:**
+
+- `limit` (optional): Max results (1-30, default: 15)
+
+### get_post
+
+Retrieve the complete content of a specific changelog post.
+
+**Parameters:**
+
+- `url` (required): Full URL of the changelog post
+
+**Example:**
+
+```json
+{
+  "name": "get_post",
+  "arguments": {
+    "url": "https://shopify.dev/changelog/graphql-api-update-2024"
+  }
+}
+```
+
+### search_all
+
+Search across both developer and platform changelogs.
+
+**Parameters:**
+
+- `query` (required): Search keywords
+- `sources` (optional): Array of sources to search (defaults to all enabled)
+- `limit` (optional): Max total results (1-30, default: 15)
+
+## Output Format
+
+All tools return formatted results with clear source attribution in a compact single-line format:
+
+```
+1. 📘 [Developer] GraphQL Admin API: New bulk operations [API, GraphQL] | Dec 11 | https://shopify.dev/changelog/graphql-bulk-operations | The GraphQL Admin API now supports bulk operations for...
+2. 🛍️ [Platform] POS: Offline mode improvements [POS, Mobile] | Dec 10 | https://changelog.shopify.com/posts/pos-offline-improvements | Point of Sale now offers enhanced offline capabilities...
+```
 
 ## Development
 
-Enable debug logging by setting the `MCP_DEBUG` environment variable:
+### Scripts
+
+- `npm run build` - Compile TypeScript
+- `npm run start` - Run the compiled server
+- `npm run dev` - Development mode with auto-reload
+- `npm run clean` - Remove build directory
+- `npm run test` - Test server initialization
+
+### Debug Mode
+
+Enable debug logging:
 
 ```bash
 MCP_DEBUG=true npm run start
 ```
-
-The server uses a modular architecture with clear separation of concerns:
-
-- Tools handle MCP protocol integration
-- Utils provide reusable business logic
-- Clean interfaces between layers
-
-## Error Handling
-
-The server includes comprehensive error handling:
-
-- Network timeouts and failures
-- XML parsing errors
-- Invalid input validation
-- Graceful degradation
-
-All errors are properly formatted for MCP client consumption.
-
-## Dependencies
-
-### Production
-
-- `@modelcontextprotocol/sdk` - MCP SDK for TypeScript
-- `fast-xml-parser` - XML parsing for RSS feeds
-- `node-fetch` - HTTP requests
-- `zod` - Schema validation
-- `cheerio` - HTML parsing for individual post content
-
-### Development
-
-- `typescript` - TypeScript compiler
-- `@types/node` - Node.js type definitions
-- `@types/cheerio` - Cheerio type definitions
-- `ts-node` - Direct TypeScript execution
-- `nodemon` - Development auto-reload
-
-## License
-
-MIT
-
-## Contributing
-
-1. Fork the repository at [https://github.com/damionrashford/shopify-dev-changelog-mcp](https://github.com/damionrashford/shopify-dev-changelog-mcp)
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Ensure TypeScript compilation succeeds
-6. Submit a pull request

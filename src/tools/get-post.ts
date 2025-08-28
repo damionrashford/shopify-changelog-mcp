@@ -1,29 +1,43 @@
 /**
- * Implementation of fetch_individual_post tool
+ * Get Post Tool - Fetches full content of an individual changelog post from either source
  */
 
 import * as cheerio from 'cheerio';
-import type { ToolResponse } from "../types.js";
+import type { ToolResponse, ChangelogSource } from "../types.js";
+
+/**
+ * Detect the source of a changelog URL
+ */
+function detectChangelogSource(url: string): ChangelogSource | null {
+  if (url.includes('shopify.dev/changelog')) return 'developer';
+  if (url.includes('changelog.shopify.com')) return 'platform';
+  return null;
+}
 
 /**
  * Fetches the full content of an individual Shopify changelog post
  */
-export async function executeFetchIndividualPost({
+export async function executeGetPost({
   url
 }: {
   url: string;
 }): Promise<ToolResponse> {
   try {
-    // Validate that the URL is a Shopify changelog URL
-    if (!url.includes('shopify.dev/changelog/')) {
+    // Detect the source from URL
+    const source = detectChangelogSource(url);
+    
+    if (!source) {
       return {
         isError: true,
         content: [{
           type: "text",
-          text: `Error: Invalid URL. Please provide a valid Shopify changelog URL (must contain 'shopify.dev/changelog/')`
+          text: `Error: Invalid URL. Please provide a valid Shopify changelog URL from either shopify.dev/changelog or changelog.shopify.com`
         }]
       };
     }
+    
+    const sourceIcon = source === 'platform' ? '🛍️' : '📘';
+    const sourceLabel = source === 'platform' ? 'Platform' : 'Developer';
 
     // Fetch the HTML content
     const response = await fetch(url);
@@ -107,11 +121,11 @@ export async function executeFetchIndividualPost({
     // Convert HTML to clean text while preserving structure
     const contentText = cleanHtmlContent(contentHtml);
     
-    // Format the response
+    // Format the response with source attribution
     const categoriesText = categories.length > 0 ? 
       `\n📋 Categories: ${categories.join(', ')}` : '';
     
-    const fullContent = `🔗 ${title}
+    const fullContent = `${sourceIcon} [${sourceLabel}] ${title}
 
 📅 Published: ${pubDate}${categoriesText}
 🌐 URL: ${url}
