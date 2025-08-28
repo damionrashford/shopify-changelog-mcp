@@ -50,3 +50,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Private notes and documentation
+DO-NOT-COMMIT/
